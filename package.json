@@ -24,12 +24,17 @@
   "engines": {
     "node": "*"
   },
+  "scripts": {
+    "test": "jest"
+  },
   "dependencies": {
-    "request": "~2.33.0",
     "irc": "~0.3.6",
+    "request": "~2.33.0",
     "underscore": "^1.7.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "jest": "^26.6.3"
+  },
   "bin": {
     "bot": "bin/bot.js"
   },
