@@ -12,7 +12,8 @@ var config = {
     income_url: process.env.INCOME_URL || '',
     outcome_token: process.env.OUTCOME_TOKEN || '',
     channels: {
-        '#g0v.tw': '#general'
+        '#g0v.tw': '#general',
+        '#g0v.rand0m': '#rand0m'
     },
     users: {
     },
@@ -21,8 +22,19 @@ var config = {
     silent: false // keep the bot quiet
 };
 
+function createReversedMap (channelMap) {
+  var k, v;
+  var result = {};
+  for (k in channelMap) {
+    v = channelMap[k];
+    result[v] = k;
+  }
+  return result;
+}
+
 var slackUsers = {};
 var slackChannels = {};
+var channelMap = createReversedMap(config.channels);
 
 function updateLists () {
   request.get({
@@ -77,19 +89,20 @@ slackbot.listen();
 var server = http.createServer(function (req, res) {
   if (req.method == 'POST') {
     req.on('data', function(data) {
-      var k, m, msg, channel, payload;
+      var k, m, msg, channel, payload, source, target;
 
       payload = querystring.parse(data.toString());
-      console.log('raw', payload);
+      source = '#' + payload.channel_name;
+      target = channelMap[source];
+      console.log('from Slack channel ' + source + ':', payload);
 
       for (k in middlewares) {
         m = middlewares[k];
         if (m.test(payload)) {
           msg = m.parse(payload, slackChannels, slackUsers);
-          if (msg) {
-	    channel = Object.keys(config.channels)[0];
-            console.log('msg', channel, msg);
-            slackbot.speak(channel, msg);
+          if (target && msg) {
+            console.log('to IRC channel ' + target + ':', msg);
+            slackbot.speak(target, msg);
           }
           break;
         }
